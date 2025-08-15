@@ -73,3 +73,15 @@ jobs:
       - name: Terraform plan (infra)
         run: terraform plan -input=false
         working-directory: infra/
+        
+      - name: Terraform init (infra) for destroy
+        run: terraform init -reconfigure
+        working-directory: infra/
+
+      - name: Terraform destroy (infra)
+        run: terraform destroy -auto-approve
+        working-directory: infra/
+
+      - name: Terraform destroy (bootstrap-backend)
+        run: terraform destroy -auto-approve
+        working-directory: bootstrap-backend/
