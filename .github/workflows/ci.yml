@@ -129,11 +129,9 @@ jobs:
         run: terraform init
         working-directory: bootstrap-backend/
 
-      - name: Empty S3 state bucket
+      - name: Empty and destroy S3 state bucket
         if: steps.get_tf_outputs.outputs.TF_STATE_BUCKET != ''
-        run: aws s3 rm s3://${{ steps.get_tf_outputs.outputs.TF_STATE_BUCKET }} --recursive
-
-      - name: Terraform destroy (bootstrap-backend)
-        if: steps.get_tf_outputs.outputs.TF_STATE_BUCKET != ''
-        run: terraform destroy -auto-approve
         working-directory: bootstrap-backend/
+        run: |
+          aws s3 rm s3://${{ steps.get_tf_outputs.outputs.TF_STATE_BUCKET }} --recursive
+          terraform destroy -auto-approve
