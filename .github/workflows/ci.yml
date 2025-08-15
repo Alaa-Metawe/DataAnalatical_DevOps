@@ -129,13 +129,16 @@ jobs:
         run: terraform init
         working-directory: bootstrap-backend/
 
-      - name: Empty and destroy S3 state bucket
+      - name: Empty S3 state bucket
         if: steps.get_tf_outputs.outputs.TF_STATE_BUCKET != ''
-        working-directory: bootstrap-backend/
         run: |
           bucket_name="${{ steps.get_tf_outputs.outputs.TF_STATE_BUCKET }}"
           # Delete all object versions
           aws s3api list-object-versions --bucket "$bucket_name" --output=json --query='Versions[*].{Key:Key,VersionId:VersionId}' | jq -r '.[] | "--key '\''\(.Key)'\'' --version-id '\''\(.VersionId)'\''"' | xargs -L 10 -r aws s3api delete-object --bucket "$bucket_name"
           # Delete all delete markers
           aws s3api list-object-versions --bucket "$bucket_name" --output=json --query='DeleteMarkers[*].{Key:Key,VersionId:VersionId}' | jq -r '.[] | "--key '\''\(.Key)'\'' --version-id '\''\(.VersionId)'\''"' | xargs -L 10 -r aws s3api delete-object --bucket "$bucket_name"
-          terraform destroy -auto-approve
+          
+      - name: Terraform destroy (bootstrap-backend)
+        if: steps.get_tf_outputs.outputs.TF_STATE_BUCKET != ''
+        working-directory: bootstrap-backend/
+        run: terraform destroy -auto-approve
